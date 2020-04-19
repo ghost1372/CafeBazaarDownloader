@@ -12,17 +12,35 @@ using System.Windows.Controls;
 using System.Windows.Forms;
 using Application = System.Windows.Application;
 using Button = System.Windows.Controls.Button;
+using Clipboard = System.Windows.Clipboard;
 
 namespace CafeBazaarDownloader
 {
     public partial class MainWindow
     {
         string apkName = string.Empty;
+        string downloadLink = string.Empty;
         public MainWindow()
         {
             InitializeComponent();
             txtLocation.Text = Environment.GetFolderPath(Environment.SpecialFolder.Desktop) + @"\";
         }
+
+        #region Change Skin and Language
+        private void ButtonConfig_OnClick(object sender, RoutedEventArgs e)
+        {
+            PopupConfig.IsOpen = true;
+        }
+
+        private void ButtonSkins_OnClick(object sender, RoutedEventArgs e)
+        {
+            if (e.OriginalSource is Button button && button.Tag is SkinType tag)
+            {
+                PopupConfig.IsOpen = false;
+                ((App)Application.Current).UpdateSkin(tag);
+            }
+        }
+        #endregion
 
         private void btnBrowse_Click(object sender, System.Windows.RoutedEventArgs e)
         {
@@ -38,10 +56,56 @@ namespace CafeBazaarDownloader
 
         private void txtUrl_TextChanged(object sender, TextChangedEventArgs e)
         {
-            btnDownload.IsEnabled = !string.IsNullOrEmpty(txtUrl.Text);
+            btnGetLink.IsEnabled = !string.IsNullOrEmpty(txtUrl.Text);
         }
 
-        private async void btnDownload_Click(object sender, System.Windows.RoutedEventArgs e)
+        private void btnDownload_Click(object sender, System.Windows.RoutedEventArgs e)
+        {
+            if (!string.IsNullOrEmpty(downloadLink))
+            {
+                OnDownloadClick(downloadLink);
+            }
+        }
+
+        private WebClient client;
+        private void OnDownloadClick(string link)
+        {
+            try
+            {
+                client = new WebClient();
+
+                string loc = txtLocation.Text + apkName + ".apk";
+
+                prg.Value = 0;
+                btnDownload.IsEnabled = false;
+                btnGetLink.IsEnabled = false;
+                client.DownloadFileCompleted += new AsyncCompletedEventHandler(Completed);
+                client.DownloadProgressChanged += new DownloadProgressChangedEventHandler(ProgressChanged);
+                client.DownloadFileAsync(new Uri(link), loc);
+            }
+            catch (Exception ex)
+            {
+
+                Growl.ErrorGlobal(ex.Message);
+            }
+        }
+        private void Completed(object sender, AsyncCompletedEventArgs e)
+        {
+            prg.Value = 0;
+            lblStatus.Content = "Download Finished";
+            btnDownload.IsEnabled = true;
+            btnGetLink.IsEnabled = true;
+        }
+        private void ProgressChanged(object sender, DownloadProgressChangedEventArgs e)
+        {
+            double bytesIn = double.Parse(e.BytesReceived.ToString());
+            double totalBytes = double.Parse(e.TotalBytesToReceive.ToString());
+            double percentage = bytesIn / totalBytes * 100;
+            prg.Value = int.Parse(Math.Truncate(percentage).ToString());
+            lblStatus.Content = $"{prg.Value}% Downloaded";
+        }
+
+        private async void btnGetLink_Click(object sender, RoutedEventArgs e)
         {
             try
             {
@@ -69,10 +133,12 @@ namespace CafeBazaarDownloader
 
                     var parse = System.Text.Json.JsonSerializer.Deserialize<CafeModel.RootObject>(resp);
                     string token = parse.singleReply.appDownloadInfoReply.token;
-                    string downloadLink = parse.singleReply.appDownloadInfoReply.cdnPrefix[0] + $"apks/{token}.apk";
+                    downloadLink = parse.singleReply.appDownloadInfoReply.cdnPrefix[0] + $"apks/{token}.apk";
 
-                    OnDownloadClick(downloadLink);
-
+                    Clipboard.SetText(downloadLink);
+                    lblStatus.Visibility = Visibility.Visible;
+                    lblStatus.Content = downloadLink + "\nLink Copied";
+                    btnDownload.IsEnabled = true;
                 }
             }
             catch (Exception ex)
@@ -81,58 +147,5 @@ namespace CafeBazaarDownloader
                 Growl.ErrorGlobal(ex.Message);
             }
         }
-
-        private WebClient client;
-        private void OnDownloadClick(string link)
-        {
-            try
-            {
-                client = new WebClient();
-
-                string loc = txtLocation.Text + apkName + ".apk";
-
-                prg.Value = 0;
-                btnDownload.IsEnabled = false;
-                lblStatus.Visibility = System.Windows.Visibility.Visible;
-                client.DownloadFileCompleted += new AsyncCompletedEventHandler(Completed);
-                client.DownloadProgressChanged += new DownloadProgressChangedEventHandler(ProgressChanged);
-                client.DownloadFileAsync(new Uri(link), loc);
-            }
-            catch (Exception ex)
-            {
-
-                Growl.ErrorGlobal(ex.Message);
-            }
-        }
-        private void Completed(object sender, AsyncCompletedEventArgs e)
-        {
-            prg.Value = 0;
-            lblStatus.Content = "Download Finished";
-            btnDownload.IsEnabled = true;
-        }
-        private void ProgressChanged(object sender, DownloadProgressChangedEventArgs e)
-        {
-            double bytesIn = double.Parse(e.BytesReceived.ToString());
-            double totalBytes = double.Parse(e.TotalBytesToReceive.ToString());
-            double percentage = bytesIn / totalBytes * 100;
-            prg.Value = int.Parse(Math.Truncate(percentage).ToString());
-            lblStatus.Content = $"{prg.Value}% Downloaded";
-        }
-
-        #region Change Skin and Language
-        private void ButtonConfig_OnClick(object sender, RoutedEventArgs e)
-        {
-            PopupConfig.IsOpen = true;
-        }
-
-        private void ButtonSkins_OnClick(object sender, RoutedEventArgs e)
-        {
-            if (e.OriginalSource is Button button && button.Tag is SkinType tag)
-            {
-                PopupConfig.IsOpen = false;
-                ((App)Application.Current).UpdateSkin(tag);
-            }
-        }
-        #endregion
     }
 }

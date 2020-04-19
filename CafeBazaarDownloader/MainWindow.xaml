@@ -8,7 +8,7 @@
         Title="CafeBazaar Apk Downloader" 
         WindowStartupLocation="CenterScreen"
         ShowTitle="True"
-        Height="280" 
+        Height="320" 
         Width="800" ResizeMode="CanMinimize">
     <hc:Window.NonClientAreaContent>
         <Grid>
@@ -35,19 +35,30 @@
         </Grid>
     </hc:Window.NonClientAreaContent>
     <Border Background="{StaticResource CloudDrawingBrush}">
-        <StackPanel>
-            <hc:TextBox TextChanged="txtUrl_TextChanged" Name="txtUrl" hc:InfoElement.Placeholder="Enter Apk Link or App ID..." Margin="10"/>
-            <StackPanel Margin="10" Orientation="Horizontal" HorizontalAlignment="Center">
-                <Button x:Name="btnBrowse" Click="btnBrowse_Click" Content="Browse" Width="200"/>
-                <hc:TextBox Name="txtLocation" hc:InfoElement.Placeholder="Download Folder..." Margin="10,0" Width="400"/>
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="220"/>
+                <RowDefinition Height="50"/>
+            </Grid.RowDefinitions>
+            <StackPanel>
+                <hc:TextBox TextChanged="txtUrl_TextChanged" Name="txtUrl" hc:InfoElement.Placeholder="Enter Apk Link or App ID..." Margin="10"/>
+                <StackPanel Margin="10" Orientation="Horizontal" HorizontalAlignment="Center">
+                    <Button x:Name="btnBrowse" Click="btnBrowse_Click" Content="Browse" Width="200"/>
+                    <hc:TextBox Name="txtLocation" hc:InfoElement.Placeholder="Download Folder..." Margin="10,0" Width="400"/>
+                </StackPanel>
+                <StackPanel HorizontalAlignment="Center" Orientation="Horizontal">
+                    <Button Click="btnGetLink_Click" IsEnabled="False" x:Name="btnGetLink" Content="Get Download Link" Width="300"/>
+                    <Button Click="btnDownload_Click" Margin="10,0" IsEnabled="False" x:Name="btnDownload" Content="Download APK" Width="300"/>
+
+                </StackPanel>
+                <ProgressBar Style="{DynamicResource ProgressBarFlat}" x:Name="prg" Margin="10"/>
+                <Label Visibility="Hidden" Style="{DynamicResource LabelPrimary}" x:Name="lblStatus" HorizontalAlignment="Center" Margin="10"/>
             </StackPanel>
-            <Button Click="btnDownload_Click" IsEnabled="False" x:Name="btnDownload" Content="Download APK" Width="300"/>
-            <ProgressBar Style="{DynamicResource ProgressBarFlat}" x:Name="prg" Margin="10"/>
-            <Label Visibility="Hidden" Style="{DynamicResource LabelPrimary}" x:Name="lblStatus" HorizontalAlignment="Center" Margin="10"/>
-            <StackPanel Margin="0,0,0,10" Orientation="Horizontal">
-                <Label Style="{DynamicResource LabelDanger}" Content="Coded By Mahdi Hosseini" VerticalAlignment="Bottom" HorizontalAlignment="Left" Margin="10"/>
-                <hc:Shield Height="25" Cursor="Hand" Command="hc:ControlCommands.OpenLink" CommandParameter="email:mahdidvb72@gmail.com" Margin="20,0" Subject="Contact" Status="mahdidvb72@gmail.com" Color="{DynamicResource DangerBrush}"/>
+            <StackPanel Margin="10,0" VerticalAlignment="Bottom" Grid.Row="1" Orientation="Horizontal">
+                <Label Style="{DynamicResource LabelDanger}" Content="Coded By Mahdi Hosseini"/>
+                <hc:Shield Height="25" Cursor="Hand" Command="hc:ControlCommands.OpenLink" CommandParameter="email:mahdidvb72@gmail.com" Margin="10,0" Subject="Contact" Status="mahdidvb72@gmail.com" Color="{DynamicResource DangerBrush}"/>
             </StackPanel>
-        </StackPanel>
+        </Grid>
+       
     </Border>
 </hc:Window>
