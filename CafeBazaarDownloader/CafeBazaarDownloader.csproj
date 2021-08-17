@@ -1,18 +1,22 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.WindowsDesktop">
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
-    <TargetFramework>netcoreapp3.1</TargetFramework>
+    <TargetFramework>net5.0-windows</TargetFramework>
     <UseWPF>true</UseWPF>
     <UseWindowsForms>true</UseWindowsForms>
+	<IncludeNativeLibrariesForSelfExtract>true</IncludeNativeLibrariesForSelfExtract>
+	<RuntimeIdentifier>win-x86</RuntimeIdentifier>
+	<PublishReadyToRun>true</PublishReadyToRun>
+	<PublishSingleFile>true</PublishSingleFile>
     <AssemblyName>CafeBazaarDownloader</AssemblyName>
     <RootNamespace>CafeBazaarDownloader</RootNamespace>
     <Version>1.0.0.0</Version>
     <Configurations>Debug;Release</Configurations>
-    <Copyright>Copyright © Mahdi 2018-2020</Copyright>
+    <Copyright>Copyright © Mahdi 2018-2021</Copyright>
     <FileVersion>1.0.0.0</FileVersion>
     <AssemblyVersion>1.0.0.0</AssemblyVersion>
     <LangVersion>latest</LangVersion>
-    <SatelliteResourceLanguages>en;fa</SatelliteResourceLanguages>
+    <SatelliteResourceLanguages>en</SatelliteResourceLanguages>
     <ApplicationIcon>Resources\460825357539-192x192.ico</ApplicationIcon>
     <Authors>Mahdi Hosseini</Authors>
   </PropertyGroup>
@@ -26,9 +30,8 @@
     <None Remove="Resources\cloud.png" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="HandyControls" Version="2.4.9.2" />
-    <PackageReference Include="Microsoft.AppCenter.Analytics" Version="3.1.0" />
-    <PackageReference Include="Microsoft.AppCenter.Crashes" Version="3.1.0" />
+    <PackageReference Include="Downloader" Version="2.2.9" />
+    <PackageReference Include="HandyControls" Version="3.3.7" />
   </ItemGroup>
   <ItemGroup>
     <Page Include="Properties\DesignTimeResources.xaml" Condition="'$(DesignTime)'=='true' OR ('$(SolutionPath)'!='' AND Exists('$(SolutionPath)') AND '$(BuildingInsideVisualStudio)'!='true' AND '$(BuildingInsideExpressionBlend)'!='true')">

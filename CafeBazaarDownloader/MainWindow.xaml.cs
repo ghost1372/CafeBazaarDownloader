@@ -1,10 +1,9 @@
-﻿using HandyControl.Controls;
-using HandyControl.Data;
-using Microsoft.Win32;
+﻿using Downloader;
+using HandyControl.Controls;
+using HandyControl.Themes;
+using HandyControl.Tools;
 using System;
-using System.Collections.Generic;
 using System.ComponentModel;
-using System.Net;
 using System.Net.Http;
 using System.Text;
 using System.Windows;
@@ -34,7 +33,7 @@ namespace CafeBazaarDownloader
 
         private void ButtonSkins_OnClick(object sender, RoutedEventArgs e)
         {
-            if (e.OriginalSource is Button button && button.Tag is SkinType tag)
+            if (e.OriginalSource is Button button && button.Tag is ApplicationTheme tag)
             {
                 PopupConfig.IsOpen = false;
                 ((App)Application.Current).UpdateSkin(tag);
@@ -67,42 +66,42 @@ namespace CafeBazaarDownloader
             }
         }
 
-        private WebClient client;
-        private void OnDownloadClick(string link)
+        private async void OnDownloadClick(string link)
         {
             try
             {
-                client = new WebClient();
-
                 string loc = txtLocation.Text + apkName + ".apk";
 
                 prg.Value = 0;
                 btnDownload.IsEnabled = false;
                 btnGetLink.IsEnabled = false;
-                client.DownloadFileCompleted += new AsyncCompletedEventHandler(Completed);
-                client.DownloadProgressChanged += new DownloadProgressChangedEventHandler(ProgressChanged);
-                client.DownloadFileAsync(new Uri(link), loc);
+                var downloader = new DownloadService();
+                downloader.DownloadProgressChanged += Downloader_DownloadProgressChanged;
+                downloader.DownloadFileCompleted += Downloader_DownloadFileCompleted;
+                await downloader.DownloadFileTaskAsync(link, loc);
             }
             catch (Exception ex)
             {
-
                 Growl.ErrorGlobal(ex.Message);
             }
         }
-        private void Completed(object sender, AsyncCompletedEventArgs e)
+
+        private void Downloader_DownloadFileCompleted(object sender, AsyncCompletedEventArgs e)
         {
-            prg.Value = 0;
-            lblStatus.Content = "Download Finished";
-            btnDownload.IsEnabled = true;
-            btnGetLink.IsEnabled = true;
+            DispatcherHelper.RunOnMainThread(() => {
+                prg.Value = 0;
+                lblStatus.Content = "Download Finished";
+                btnDownload.IsEnabled = true;
+                btnGetLink.IsEnabled = true;
+            });
         }
-        private void ProgressChanged(object sender, DownloadProgressChangedEventArgs e)
+
+        private void Downloader_DownloadProgressChanged(object sender, Downloader.DownloadProgressChangedEventArgs e)
         {
-            double bytesIn = double.Parse(e.BytesReceived.ToString());
-            double totalBytes = double.Parse(e.TotalBytesToReceive.ToString());
-            double percentage = bytesIn / totalBytes * 100;
-            prg.Value = int.Parse(Math.Truncate(percentage).ToString());
-            lblStatus.Content = $"{prg.Value}% Downloaded";
+            DispatcherHelper.RunOnMainThread(() => {
+                prg.Value = (int)e.ProgressPercentage;
+                lblStatus.Content = $"{(int)e.ProgressPercentage}% Downloaded";
+            });
         }
 
         private async void btnGetLink_Click(object sender, RoutedEventArgs e)
